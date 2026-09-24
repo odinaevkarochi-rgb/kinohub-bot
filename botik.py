@@ -4,7 +4,7 @@ from telebot import types
 from threading import Thread
 from http.server import HTTPServer, BaseHTTPRequestHandler
 
-TOKEN = "8947714265:AAG-mO2sL6ZDAhjATJme1OtPaNYM7ObL3jo"
+TOKEN =8947714265:AAF-i4Oj-1kU2LRmgF6eq0SSiyPSag7JUOA
 bot = telebot.TeleBot(TOKEN)
 
 CHANNEL_USERNAME = "@MKINOHUB_HD"
