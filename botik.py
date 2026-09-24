@@ -32,30 +32,39 @@ def is_subscribed(user_id):
     try:
         m = bot.get_chat_member(CHANNEL_USERNAME, user_id)
         return m.status in ['member', 'administrator', 'creator']
-    except:
+    except Exception as e:
+        print(f"Error checking sub: {e}")
         return False
 
 @bot.message_handler(commands=['start'])
 def start_cmd(message):
-    if is_subscribed(message.from_user.id):
-        bot.send_message(message.chat.id, "Хуш омадед! Коди филмро фиристед.")
+    user_id = message.from_user.id
+    if is_subscribed(user_id):
+        bot.send_message(message.chat.id, "👋 Хуш омадед ба KinoHUB!\n\n🎬 Коди филмро фиристед.")
     else:
         markup = types.InlineKeyboardMarkup()
-        markup.add(types.InlineKeyboardButton("Обуна шудан", url=CHANNEL_URL))
-        markup.add(types.InlineKeyboardButton("Санҷиши обуна ✅", callback_data="check"))
-        bot.send_message(message.chat.id, "Аввал ба канал обуна шавед:", reply_markup=markup)
+        btn_sub = types.InlineKeyboardButton("📢 Подписаться на канал", url=CHANNEL_URL)
+        btn_check = types.InlineKeyboardButton("✅ Проверить подписку", callback_data="check_sub")
+        markup.add(btn_sub)
+        markup.add(btn_check)
+        bot.send_message(
+            message.chat.id, 
+            "⚠️ Барои истифодаи бот бояд ба канали мо обуна шавед!", 
+            reply_markup=markup
+        )
 
-@bot.callback_query_handler(func=lambda call: call.data == "check")
-def check_sub(call):
+@bot.callback_query_handler(func=lambda call: call.data == "check_sub")
+def check_sub_callback(call):
     if is_subscribed(call.from_user.id):
-        bot.answer_callback_query(call.id, "Тасдиқ шуд!")
-        bot.send_message(call.message.chat.id, "Ҳоло коди филмро фиристед.")
+        bot.answer_callback_query(call.id, "✅ Подписка подтверждена!")
+        bot.send_message(call.message.chat.id, "🎉 Ташаккур! Ҳоло коди филмро фиристед.")
     else:
-        bot.answer_callback_query(call.id, "Шумо ҳанӯз обуна нашудаед!", show_alert=True)
+        bot.answer_callback_query(call.id, "❌ Шумо ҳанӯз обуна нашудаед!", show_alert=True)
 
 @bot.message_handler(content_types=['video'])
 def get_file_id(message):
-    bot.send_message(message.chat.id, f"File_id:\n`{message.video.file_id}`", parse_mode="Markdown")
+    file_id = message.video.file_id
+    bot.send_message(message.chat.id, f"✅ File_id ин видео:\n\n`{file_id}`", parse_mode="Markdown")
 
 @bot.message_handler(func=lambda m: True)
 def send_movie(message):
@@ -66,9 +75,9 @@ def send_movie(message):
     if code in MOVIES:
         bot.send_video(message.chat.id, MOVIES[code]["id"], caption=MOVIES[code]["name"])
     else:
-        bot.send_message(message.chat.id, "Филм ёфт нашуд.")
+        bot.send_message(message.chat.id, "❌ Филм бо ин код ёфт нашуд.")
 
 if __name__ == "__main__":
     Thread(target=run_web_server, daemon=True).start()
     bot.infinity_polling()
-  
+    
